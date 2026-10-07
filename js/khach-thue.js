@@ -1,16 +1,21 @@
-let khachList = [];
+let allKhachList = [];
 let activeContracts = [];
 
+function removeVietnameseTones(str) {
+    if (!str) return '';
+    str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    str = str.replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    return str.toLowerCase().trim();
+}
+
 async function loadDanhSachKhach() {
-    const search = document.getElementById('search-khach').value;
-    let url = '/khach-thue';
-    if (search) url += `?search=${encodeURIComponent(search)}`;
+    const tbody = document.getElementById('khach-tbody');
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center"><div class="loading-spinner" style="margin:20px auto"></div></td></tr>`;
 
     const [resKhach, resHD] = await Promise.all([
-        api.get(url),
+        api.get('/khach-thue'),
         api.get('/hop-dong?trangThai=DANG_HIEU_LUC')
     ]);
-    const tbody = document.getElementById('khach-tbody');
     
     if (!resKhach.success) {
         showToast(resKhach.message, 'error');
@@ -18,22 +23,41 @@ async function loadDanhSachKhach() {
         return;
     }
 
-    khachList = resKhach.data;
-    if (resHD.success) activeContracts = resHD.data;
-    if (!khachList.length) {
-        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><h3>Không có dữ liệu</h3></div></td></tr>`;
-        return;
-    }
+    allKhachList = resKhach.data || [];
+    if (resHD.success) activeContracts = resHD.data || [];
+    renderKhachTable();
+}
+
+function renderKhachTable() {
+    const searchVal = document.getElementById('search-khach') ? document.getElementById('search-khach').value : '';
+    const kw = removeVietnameseTones(searchVal);
+    const tbody = document.getElementById('khach-tbody');
 
     const tenantRoomMap = {};
     activeContracts.forEach(hd => {
-        const roomName = (hd.phong.soPhong || '') + (hd.phong.khuVuc ? ` Khu Vực ${hd.phong.khuVuc}` : '');
-        hd.khachThues.forEach(k => {
+        const roomName = (hd.phong && hd.phong.soPhong ? hd.phong.soPhong : '') + (hd.phong && hd.phong.khuVuc ? ` Khu Vực ${hd.phong.khuVuc}` : '');
+        (hd.khachThues || []).forEach(k => {
             tenantRoomMap[k.id] = roomName;
         });
     });
 
-    tbody.innerHTML = khachList.map(k => {
+    let filtered = allKhachList;
+    if (kw) {
+        filtered = allKhachList.filter(k => {
+            const name = removeVietnameseTones(k.hoTen || '');
+            const phone = (k.soDienThoai || '').toLowerCase();
+            const cccd = (k.cccd || '').toLowerCase();
+            const room = removeVietnameseTones(tenantRoomMap[k.id] || '');
+            return name.includes(kw) || phone.includes(kw) || cccd.includes(kw) || room.includes(kw);
+        });
+    }
+
+    if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><h3>Không tìm thấy khách thuê phù hợp</h3></div></td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(k => {
         const phongHienTai = tenantRoomMap[k.id] 
             ? `<span style="color:var(--success); font-weight:600">${tenantRoomMap[k.id]}</span>` 
             : `<span style="color:var(--text-muted); font-size:12px;">Chưa có phòng</span>`;
@@ -46,7 +70,6 @@ async function loadDanhSachKhach() {
             <td>${phongHienTai}</td>
             <td>
                 <div>📱 ${k.soDienThoai || '—'}</div>
- 
             </td>
             <td><span class="badge badge-gray">${k.cccd || '—'}</span></td>
             <td>${formatDate(k.ngaySinh)}</td>
@@ -66,7 +89,7 @@ function openModalKhach(id = null) {
 
     if (id) {
         title.textContent = 'Sửa thông tin khách thuê';
-        const k = khachList.find(x => x.id === id);
+        const k = allKhachList.find(x => x.id === id);
         if(!k) return;
         document.getElementById('k-id').value = k.id;
         document.getElementById('k-ho-ten').value = k.hoTen;

@@ -102,10 +102,16 @@ const api = {
       if (path === '/khach-thue') {
         const snap = await firestore.collection('khach_thue').get();
         let list = snap.docs.map(docToData);
-        const kw = params.get('hoTen');
+        const kw = params.get('search') || params.get('hoTen') || params.get('kw');
         if (kw) {
-          const lower = kw.toLowerCase();
-          list = list.filter(k => k.hoTen && k.hoTen.toLowerCase().includes(lower));
+          const normalize = str => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase().trim();
+          const cleanKw = normalize(kw);
+          list = list.filter(k => {
+            const name = normalize(k.hoTen);
+            const phone = (k.soDienThoai || '').toLowerCase();
+            const cccd = (k.cccd || '').toLowerCase();
+            return name.includes(cleanKw) || phone.includes(cleanKw) || cccd.includes(cleanKw);
+          });
         }
         list.sort((a, b) => (a.hoTen || '').localeCompare(b.hoTen || ''));
         return { success: true, data: list };

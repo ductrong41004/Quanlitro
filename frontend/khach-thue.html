@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -52,11 +52,11 @@
 
         <main class="page-content">
             <div class="filters-bar">
-                <div class="search-box" style="max-width:300px">
+                <div class="search-box" style="max-width:350px">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="search-khach" class="form-control" placeholder="Tìm theo tên..." onkeyup="if(event.key==='Enter') loadDanhSachKhach()">
+                    <input type="text" id="search-khach" class="form-control" placeholder="Tìm theo tên, SĐT, CCCD, phòng..." oninput="renderKhachTable()">
                 </div>
-                <button class="btn btn-ghost" onclick="document.getElementById('search-khach').value=''; loadDanhSachKhach()">Làm mới</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('search-khach').value=''; renderKhachTable()">Làm mới</button>
             </div>
 
             <div class="card" style="padding:0; overflow:hidden;">
