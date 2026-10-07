@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chờ Chốt Hóa Đơn - Quản Lý Phòng Trọ</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .page-content { padding: 20px; }
+        .table-wrap { background:var(--bg-card); border-radius:12px; border:1px solid var(--border); overflow-x:auto; margin-top:10px; }
+        .action-link { cursor: pointer; color: var(--primary-light); display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; background: rgba(99, 102, 241, 0.1); text-decoration: none; font-weight: 500; transition: 0.2s; font-size:13px; white-space: nowrap; }
+        .action-link:hover { background: rgba(99, 102, 241, 0.25); color: #fff; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏠</div>
+            <div class="logo-text">
+                <h2>Nhà Trọ</h2>
+                <span>Quản lý chuyên nghiệp</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Tổng quan</div>
+            <a href="index.html" class="nav-item">
+                <div class="nav-icon">📊</div>
+                Dashboard
+            </a>
+
+            <div class="nav-section-label">Quản lý</div>
+            <a href="phong.html" class="nav-item">
+                <div class="nav-icon">🏘️</div>
+                Phòng trọ
+            </a>
+            <a href="khach-thue.html" class="nav-item">
+                <div class="nav-icon">👥</div>
+                Khách thuê
+            </a>
+            <a href="hop-dong.html" class="nav-item">
+                <div class="nav-icon">📋</div>
+                Hợp đồng
+            </a>
+            <a href="hoa-don.html" class="nav-item">
+                <div class="nav-icon">🧾</div>
+                Hóa đơn
+                <span class="nav-badge" id="badge-chua-tt" style="display:none">0</span>
+            </a>
+            <a href="cho-chot.html" class="nav-item active">
+                <div class="nav-icon">⏳</div>
+                Chờ chốt Hóa đơn
+            </a>
+            <a href="scan-khach.html" class="nav-item">
+                <div class="nav-icon">🖨️</div>
+                Scan Khách
+            </a>
+        </nav>
+        <div class="sidebar-footer">Quản Lý Phòng Trọ v1.0</div>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title">
+                <h1>Phòng Chờ Chốt Hóa Đơn</h1>
+                <p style="color:var(--text-muted); margin-top:4px;">Danh sách tất cả các phòng đến lịch ghi số điện, nước (Sắp xếp theo ngày gần nhất)</p>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn btn-primary" onclick="loadChoChotHoaDon()" title="Làm mới">🔄 Làm mới danh sách</button>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="filters-bar" style="margin-bottom: 10px;">
+                <select id="filter-thang-cc" class="form-control" style="width: 140px;" onchange="onThangNamChange()"></select>
+                <select id="filter-nam-cc" class="form-control" style="width: 100px;" onchange="onThangNamChange()"></select>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-cc" class="form-control" placeholder="Nhập phòng... VD: A1, B, 101" oninput="renderChoChotByMonth()">
+                </div>
+            </div>
+            <div id="main-content-wrap">
+                <div class="loading-overlay" style="display: flex; height: 300px; padding-top: 50px;"><div class="loading-spinner"></div></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cho-chot.js"></script>
+</body>
+</html>

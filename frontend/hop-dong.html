@@ -1,0 +1,339 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hợp Đồng - Quản Lý Phòng Trọ</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏠</div>
+            <div class="logo-text">
+                <h2>Nhà Trọ</h2>
+                <span>Quản lý chuyên nghiệp</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Tổng quan</div>
+            <a href="index.html" class="nav-item">
+                <div class="nav-icon">📊</div> Dashboard
+            </a>
+            <div class="nav-section-label">Quản lý</div>
+            <a href="phong.html" class="nav-item">
+                <div class="nav-icon">🏘️</div> Phòng trọ
+            </a>
+            <a href="khach-thue.html" class="nav-item">
+                <div class="nav-icon">👥</div> Khách thuê
+            </a>
+            <a href="hop-dong.html" class="nav-item active">
+                <div class="nav-icon">📋</div> Hợp đồng
+            </a>
+            <a href="hoa-don.html" class="nav-item">
+                <div class="nav-icon">🧾</div> Hóa đơn
+            </a>
+            <a href="cho-chot.html" class="nav-item">
+                <div class="nav-icon">⏳</div> Chờ chốt Hóa đơn
+            </a>
+            <a href="scan-khach.html" class="nav-item">
+                <div class="nav-icon">🖨️</div> Scan Khách
+            </a>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title"><h1>Quản Lý Hợp Đồng</h1></div>
+            <div class="topbar-actions">
+                <button class="btn btn-primary" onclick="openModalHopDong()">➕ Tạo hợp đồng mới</button>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="filters-bar">
+                <select id="filter-hd-trang-thai" class="form-control" style="width: 200px;" onchange="loadDanhSachHopDong()">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="DANG_HIEU_LUC">Đang hiệu lực</option>
+                    <option value="DA_KET_THUC">Đã kết thúc</option>
+                    <option value="DA_HUY">Đã xóa gần đây</option>
+                </select>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-hd" class="form-control" placeholder="Tìm theo phòng/khách..." oninput="filterHopDongLocally()">
+                </div>
+            </div>
+
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div class="table-wrap" style="border:none; border-radius:0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Phòng</th>
+                                <th>Khách thuê</th>
+                                <th>Thời hạn</th>
+                                <th>Giá/Cọc</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hd-tbody">
+                            <tr><td colspan="6" style="text-align:center; padding:30px;"><div class="loading-spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Tạo Hợp Đồng -->
+    <div class="modal-overlay" id="modal-hd">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-hd-title">Tạo hợp đồng mới</h3>
+                <button class="modal-close" onclick="closeModal('modal-hd')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-hd">
+                    <input type="hidden" id="hd-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Chọn phòng * (Chỉ hiện phòng trống)</label>
+                            <select id="hd-phong" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Chọn khách thuê * (Tick chọn nhiều)</label>
+                            <input type="text" id="search-khach-hop-dong" class="form-control" style="margin-bottom: 6px; font-size: 13px; padding: 6px 10px" placeholder="🔍 Tìm tên khách..." oninput="filterKhachOnHopDongModal()">
+                            <div id="hd-khach-list" class="form-control" style="height: 125px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-card)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Ngày bắt đầu *</label>
+                            <input type="date" id="hd-ngay-bd" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày kết thúc (dự kiến) *</label>
+                            <input type="date" id="hd-ngay-kt" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label class="form-label">Giá thuê / tháng (VNĐ) *</label>
+                            <input type="text" inputmode="numeric" id="hd-gia-thue" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tiền cọc (VNĐ)</label>
+                            <input type="text" inputmode="numeric" id="hd-tien-coc" class="form-control" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày lấy tiền hàng tháng</label>
+                            <input type="number" id="hd-ngay-tra" class="form-control" min="1" max="31" value="5">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Số điện ban đầu (Chốt mới) <small style="color:var(--text-muted)">(Tự động hóa đơn)</small></label>
+                            <input type="number" id="hd-dien-bd" class="form-control" placeholder="Ví dụ: 0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Số nước ban đầu (Chốt mới) <small style="color:var(--text-muted)">(Tự động hóa đơn)</small></label>
+                            <input type="number" id="hd-nuoc-bd" class="form-control" placeholder="Ví dụ: 0" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ghi chú điều khoản bổ sung</label>
+                        <textarea id="hd-ghi-chu" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modal-hd')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveHopDong()">Lưu hợp đồng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem Chi Tiết HĐ (Tùy chọn hiển thị đầy đủ) -->
+
+    <!-- Modal Kết thúc Hợp đồng & Hoàn cọc -->
+    <div class="modal-overlay" id="modal-ket-thuc">
+        <div class="modal" style="max-width: 520px">
+            <div class="modal-header">
+                <h3 class="modal-title">🔚 Kết thúc Hợp đồng & Hoàn cọc</h3>
+                <button class="modal-close" onclick="closeModal('modal-ket-thuc')">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Thông tin phòng -->
+                <div style="background:var(--bg-input); padding:12px 16px; border-radius:8px; margin-bottom:16px;">
+                    <div id="kt-phong-info" style="font-weight:700; color:var(--primary-light); font-size:15px; margin-bottom:4px;"></div>
+                    <div id="kt-khach-info" style="color:var(--text-muted); font-size:13px;"></div>
+                </div>
+
+                <!-- Tiền cọc -->
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:12px 16px; border-radius:8px; margin-bottom:16px;">
+                    <span style="color:var(--text-muted); font-size:14px;">💰 Tiền cọc sẽ hoàn:</span>
+                    <strong id="kt-tien-coc" style="color:var(--success); font-size:18px;"></strong>
+                </div>
+
+                <!-- Chỉ số điện nước -->
+                <h4 style="font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">⚡💧 Chỉ số điện - nước khi trả phòng</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">⚡ Điện cũ (chốt gần nhất)</label>
+                        <input type="text" id="kt-dien-cu" class="form-control" readonly
+                            style="opacity:0.6; cursor:not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px; color:var(--primary-light);">⚡ Điện mới (lúc trả phòng) *</label>
+                        <input type="number" step="0.1" id="kt-dien-moi" class="form-control"
+                            placeholder="Nhập chỉ số điện..." oninput="tinhHoanCoc()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">💧 Nước cũ (chốt gần nhất)</label>
+                        <input type="text" id="kt-nuoc-cu" class="form-control" readonly
+                            style="opacity:0.6; cursor:not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px; color:var(--info);">💧 Nước mới (lúc trả phòng) *</label>
+                        <input type="number" step="0.1" id="kt-nuoc-moi" class="form-control"
+                            placeholder="Nhập chỉ số nước..." oninput="tinhHoanCoc()">
+                    </div>
+                </div>
+
+                <!-- Đơn giá -->
+                <div class="form-row" style="margin-bottom:4px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px; color:var(--text-muted);">Đơn giá điện (đ/kWh)</label>
+                        <input type="text" inputmode="numeric" id="kt-gia-dien" class="form-control" oninput="tinhHoanCoc()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px; color:var(--text-muted);">Đơn giá nước (đ/m³)</label>
+                        <input type="text" inputmode="numeric" id="kt-gia-nuoc" class="form-control" oninput="tinhHoanCoc()">
+                    </div>
+                </div>
+
+                <!-- Ngày ở thêm -->
+                <div class="form-row" style="margin-bottom:4px; margin-top:8px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px; color:var(--warning);">📅 Ngày ở thêm</label>
+                        <input type="number" min="0" id="kt-ngay-o-them" class="form-control" value="0" placeholder="0" oninput="tinhHoanCoc()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px; color:var(--warning);">💵 Đơn giá thuê ngày (đ/ngày)</label>
+                        <input type="text" inputmode="numeric" id="kt-gia-thue-ngay" class="form-control" value="0" placeholder="0" oninput="tinhHoanCoc()">
+                    </div>
+                </div>
+
+                <!-- Kết quả tính toán -->
+                <div id="kt-result-box" style="display:none; margin-top:20px; background:var(--bg-card); border-radius:10px; padding:16px; border:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
+                        <span style="color:var(--text-muted);">⚡ Tiền điện khấu trừ (<span id="kt-so-dien"></span> kWh):</span>
+                        <span id="kt-tien-dien" style="color:var(--danger); font-weight:600;"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
+                        <span style="color:var(--text-muted);">💧 Tiền nước khấu trừ (<span id="kt-so-nuoc"></span> m³):</span>
+                        <span id="kt-tien-nuoc" style="color:var(--danger); font-weight:600;"></span>
+                    </div>
+                    <div id="kt-row-o-them" style="display:none; justify-content:space-between; margin-bottom:8px; font-size:14px;">
+                        <span style="color:var(--warning);">📅 Tiền ở thêm (<span id="kt-so-ngay-o-them"></span> ngày):</span>
+                        <span id="kt-tien-o-them" style="color:var(--warning); font-weight:600;"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border); padding-top:14px; margin-top:6px;">
+                        <span style="font-size:15px; font-weight:700;">💵 Tiền hoàn trả khách:</span>
+                        <span id="kt-hoan-tra" style="font-size:22px; font-weight:800; color:var(--success);"></span>
+                    </div>
+                    <!-- Cảnh báo nếu khách nợ -->
+                    <div id="kt-canh-bao-no" style="display:none; margin-top:12px; background:rgba(239,68,68,0.12); border:1px solid var(--danger); padding:10px 14px; border-radius:8px; font-size:13px; color:var(--danger);">
+                        ⚠️ Tiền điện/nước/ở thêm vượt quá cọc! Khách cần nộp thêm trước khi trả phòng.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modal-ket-thuc')">Hủy</button>
+                <button class="btn btn-warning" id="btn-xac-nhan-ket-thuc" onclick="xacNhanKetThuc()">
+                    🔚 Xác nhận Kết thúc HĐ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Biên Lai Hoàn Cọc -->
+    <div class="modal-overlay" id="modal-bill-hoan-coc">
+        <div class="modal" style="max-width: 450px; padding: 24px;">
+            <div id="bill-hoan-coc-content" style="background:var(--bg-card); padding:24px; border-radius:12px; border:1px solid var(--border); position: relative; overflow: hidden;">
+                <!-- Decor -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--warning), var(--danger));"></div>
+                
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0; text-transform: uppercase;">Biên Lai Trả Phòng</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="bill-ngay-lap"></p>
+                </div>
+
+                <div style="border-bottom: 1px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                    <strong id="bill-phong" style="font-size: 16px; color: var(--primary-light);"></strong>
+                    <div id="bill-khach" style="font-size: 13px; color: var(--text-sub); margin-top: 4px;"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: var(--text-muted); font-size: 14px;">Tiền cọc ban đầu:</span>
+                    <strong id="bill-tien-coc" style="font-size: 14px; color: var(--success);"></strong>
+                </div>
+
+                <div style="border-bottom: 1px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px; margin-top: 12px;">
+                    <div style="font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px;">KHẤU TRỪ ĐIỆN / NƯỚC / Ở THÊM</div>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">⚡ Điện (<span id="bill-so-dien"></span> kWh):</span>
+                        <span id="bill-tien-dien"></span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px; text-align: right;">
+                        (<span id="bill-dien-cu"></span> → <span id="bill-dien-moi"></span>) x <span id="bill-gia-dien"></span>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
+                        <span style="color: var(--text-muted);">💧 Nước (<span id="bill-so-nuoc"></span> m³):</span>
+                        <span id="bill-tien-nuoc"></span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); text-align: right; margin-bottom: 8px;">
+                        (<span id="bill-nuoc-cu"></span> → <span id="bill-nuoc-moi"></span>) x <span id="bill-gia-nuoc"></span>
+                    </div>
+
+                    <div id="bill-row-o-them" style="display:none;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px;">
+                            <span style="color: var(--warning);">📅 Ở thêm (<span id="bill-so-ngay-o-them"></span> ngày):</span>
+                            <span id="bill-tien-o-them" style="color: var(--warning);"></span>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-align: right;">
+                            <span id="bill-so-ngay-o-them-2"></span> ngày x <span id="bill-gia-thue-ngay"></span>/ngày
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(16,185,129,0.1); padding: 12px 16px; border-radius: 8px;">
+                    <span style="font-size: 14px; font-weight: 600; color: var(--text-sub);">TIỀN HOÀN TRẢ:</span>
+                    <strong id="bill-hoan-tra" style="font-size: 20px; font-weight: 800; color: var(--success);"></strong>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('modal-bill-hoan-coc')">Đóng</button>
+                <button class="btn btn-primary" style="flex: 2; display: flex; justify-content: center; align-items: center; gap: 8px;" onclick="copyBillHoanCoc()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copy Ảnh Biên Lai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/hop-dong.js"></script>
+</body>
+</html>

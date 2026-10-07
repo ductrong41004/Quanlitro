@@ -1,0 +1,10 @@
+# Binary & Build artifacts
+backend/target/
+*.jar
+cloudflared.exe
+*.exe
+
+# Logs & temp
+migration/
+*.log
+.vscode/

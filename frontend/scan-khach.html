@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Khách Thuê - Quản Lý Phòng Trọ</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏠</div>
+            <div class="logo-text">
+                <h2>Nhà Trọ</h2>
+                <span>Quản lý chuyên nghiệp</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Tổng quan</div>
+            <a href="index.html" class="nav-item">
+                <div class="nav-icon">📊</div> Dashboard
+            </a>
+            <div class="nav-section-label">Quản lý</div>
+            <a href="phong.html" class="nav-item">
+                <div class="nav-icon">🏘️</div> Phòng trọ
+            </a>
+            <a href="khach-thue.html" class="nav-item">
+                <div class="nav-icon">👥</div> Khách thuê
+            </a>
+            <a href="hop-dong.html" class="nav-item">
+                <div class="nav-icon">📋</div> Hợp đồng
+            </a>
+            <a href="hoa-don.html" class="nav-item">
+                <div class="nav-icon">🧾</div> Hóa đơn
+            </a>
+            <a href="cho-chot.html" class="nav-item">
+                <div class="nav-icon">⏳</div> Chờ chốt Hóa đơn
+            </a>
+            <a href="scan-khach.html" class="nav-item active">
+                <div class="nav-icon">🖨️</div> Scan Khách
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            Quản Lý Phòng Trọ v1.0
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title"><h1>Scan & Tạo Hàng Loạt</h1></div>
+        </header>
+
+        <main class="page-content" style="padding: 20px 30px">
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-top:0; color:var(--primary-light)">Cú pháp nhập liệu:</h3>
+                <p style="color:var(--text-muted); font-size:14px; margin-bottom: 10px;">
+                    Copy dữ liệu Excel bảng tính hoặc gõ tay theo định dạng (Cách nhau bởi dấu phẩy <code>,</code>):<br>
+                    <code style="background:var(--bg-input); padding: 5px; display:block; margin: 10px 0; color:var(--info)">Họ Tên, CCCD, Số điện thoại, Ngày sinh (dd/mm/yyyy), Giới tính (Nam/Nữ), Quê quán</code>
+                    <strong>Mẹo:</strong> Nếu thiếu thông tin ở giữa, cứ gõ 2 dấu phẩy liên tiếp <code>,,</code> ví dụ: <code>Khách hàng A, 012345,,31/12/1998,Nữ,Hà Nội</code>
+                </p>
+                <textarea id="scan-text" class="form-control" rows="8" placeholder="Dán văn bản văn thô vào đây...
+Nguyễn Hoàng Anh, 09122312381922, 0939535510, 26/12/2001, Nam, Hà Tĩnh
+Lâm Hà Tĩnh, 091231023912,, 31/12/1998, Nữ, Hà Nội"></textarea>
+                
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="parseText()">Phân tích văn bản</button>
+                    <button class="btn btn-ghost" onclick="document.getElementById('scan-text').value=''; pendingKhach=[]; renderPreview()">Xóa trắng</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div style="padding: 15px 20px; border-bottom: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">Bảng Đọc Trước Dữ Liệu</h3>
+                    <button id="btn-save-all" class="btn btn-primary" style="display:none;" onclick="saveAll()">🔥 Lưu Hàng Loạt Vào Hệ Thống</button>
+                </div>
+                <div class="table-wrap" style="border:none; border-radius:0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>CCCD</th>
+                                <th>Số ĐT</th>
+                                <th>Ngày sinh</th>
+                                <th>Giới tính</th>
+                                <th>Quê quán</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-tbody">
+                            <tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted)">Nhập văn bản và bấm Phân tích để xem trước</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== TẠO PHÒNG HÀNG LOẠT ===== -->
+            <div class="card" style="margin-top: 30px; border: 1px solid rgba(99,102,241,0.3);">
+                <h3 style="margin-top:0; color:var(--primary-light)">🏠 Tạo Phòng Hàng Loạt</h3>
+                <p style="color:var(--text-muted); font-size:14px; margin-bottom:10px;">
+                    Cú pháp nhập dãy phòng, cách nhau bằng dấu phẩy <code>,</code>:<br>
+                    <code style="background:var(--bg-input); padding:5px; display:block; margin:8px 0; color:var(--info)">
+                        A01-A10 &nbsp;→&nbsp; Phòng 01←10 Khu A (tất cả)<br>
+                        A01-A10, B01-B05 &nbsp;→&nbsp; Khu A và Khu B cùng lúc<br>
+                        C02--C10 &nbsp;→&nbsp; Chỉ số chẵn: 02, 04, 06, 08, 10 Khu C (duble dash)
+                    </code>
+                </p>
+
+                <div class="form-row" style="margin-bottom:12px;">
+                    <div class="form-group">
+                        <label class="form-label">Dãy phòng *</label>
+                        <input type="text" id="phong-range" class="form-control" placeholder="Ví dụ: A01-A10, B01-B05, C02--C10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giá thuê (VNĐ) *</label>
+                        <input type="number" id="phong-gia" class="form-control" placeholder="Ví dụ: 2500000">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom:12px;">
+                    <div class="form-group">
+                        <label class="form-label">Diện tích (m²)</label>
+                        <input type="number" id="phong-dientich" class="form-control" placeholder="Ví dụ: 20">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mô tả (dùng chung cho tất cả)</label>
+                        <input type="text" id="phong-mota" class="form-control" placeholder="Ví dụ: Phòng tiện nghi cơ bản">
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-bottom:16px;">
+                    <button class="btn btn-primary" onclick="parsePhongRange()">Xem trước phòng</button>
+                    <button class="btn btn-ghost" onclick="document.getElementById('phong-range').value=''; pendingPhong=[]; renderPhongPreview()">Xóa trắng</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding:0; overflow:hidden; margin-top:16px;">
+                <div style="padding:15px 20px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">🗻 Bảng Xem Trước Phòng</h3>
+                    <button id="btn-save-phong" class="btn btn-primary" style="display:none;" onclick="saveAllPhong()">🔥 Tạo Phòng Hàng Loạt</button>
+                </div>
+                <div class="table-wrap" style="border:none; border-radius:0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Khu vực</th>
+                                <th>Số phòng</th>
+                                <th>Giá thuê</th>
+                                <th>Diện tích</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="phong-preview-tbody">
+                            <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted)">Nhập dãy phòng và bấm "Xem trước" để hiển thị</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/scan-khach.js"></script>
+</body>
+</html>

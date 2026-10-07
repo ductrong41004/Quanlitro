@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quản Lý Phòng Trọ</title>
+    <meta name="description" content="Hệ thống quản lý nhà trọ - Tổng quan">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏠</div>
+            <div class="logo-text">
+                <h2>Nhà Trọ</h2>
+                <span>Quản lý chuyên nghiệp</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Tổng quan</div>
+            <a href="index.html" class="nav-item active">
+                <div class="nav-icon">📊</div>
+                Dashboard
+            </a>
+
+            <div class="nav-section-label">Quản lý</div>
+            <a href="phong.html" class="nav-item">
+                <div class="nav-icon">🏘️</div>
+                Phòng trọ
+            </a>
+            <a href="khach-thue.html" class="nav-item">
+                <div class="nav-icon">👥</div>
+                Khách thuê
+            </a>
+            <a href="hop-dong.html" class="nav-item">
+                <div class="nav-icon">📋</div>
+                Hợp đồng
+            </a>
+            <a href="hoa-don.html" class="nav-item">
+                <div class="nav-icon">🧾</div>
+                Hóa đơn
+                <span class="nav-badge" id="badge-chua-tt" style="display:none">0</span>
+            </a>
+            <a href="cho-chot.html" class="nav-item">
+                <div class="nav-icon">⏳</div>
+                Chờ chốt Hóa đơn
+            </a>
+            <a href="scan-khach.html" class="nav-item">
+                <div class="nav-icon">🖨️</div>
+                Scan Khách
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            Quản Lý Phòng Trọ v1.0
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title">
+                <h1>Dashboard</h1>
+                <p id="current-date">Đang tải...</p>
+            </div>
+            <div class="topbar-actions">
+                <button class="btn-icon" onclick="loadDashboard()" title="Làm mới">🔄</button>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <!-- Stat Cards -->
+            <div class="stat-grid" id="stat-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon blue">🏠</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="tong-phong">—</div>
+                        <div class="stat-label">Tổng số phòng</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon green">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="phong-trong">—</div>
+                        <div class="stat-label">Phòng trống</div>
+                    </div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon purple">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="phong-da-thue">—</div>
+                        <div class="stat-label">Phòng đã thuê</div>
+                    </div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-icon yellow">🧾</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="hd-chua-tt">—</div>
+                        <div class="stat-label">Chưa thanh toán</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon green">💰</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="doanh-thu-thang" style="font-size:18px">—</div>
+                        <div class="stat-label">Doanh thu tháng này</div>
+                    </div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-icon blue">📅</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="doanh-thu-nam" style="font-size:18px">—</div>
+                        <div class="stat-label">Doanh thu năm nay</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts + Alerts -->
+            <div class="grid-2" style="gap:20px; margin-bottom:24px;">
+                <!-- Chart doanh thu -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📈 Doanh thu theo tháng</div>
+                        <span id="year-label" style="font-size:13px; color:var(--text-muted)"></span>
+                    </div>
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="chart-doanh-thu"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tỷ lệ phòng -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🏘️ Tỷ lệ phòng</div>
+                    </div>
+                    <div style="position: relative; height: 200px; width: 100%; display: flex; justify-content: center;">
+                        <canvas id="chart-phong"></canvas>
+                    </div>
+                    <div id="phong-legend" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:12px; justify-content: center;"></div>
+                </div>
+            </div>
+
+            <div class="grid-2" style="gap:20px;">
+                <!-- Hợp đồng sắp hết hạn -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">⏰ Hợp đồng sắp hết hạn (30 ngày tới)</div>
+                        <a href="hop-dong.html" class="btn btn-ghost btn-sm">Xem tất cả</a>
+                    </div>
+                    <div id="sap-het-han-content">
+                        <div class="loading-overlay"><div class="loading-spinner"></div></div>
+                    </div>
+                </div>
+
+                <!-- Chờ chốt hóa đơn -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🧾 Chờ chốt điện nước (5 ngày tới)</div>
+                        <a href="hoa-don.html" class="btn btn-ghost btn-sm">Mở Hóa đơn</a>
+                    </div>
+                    <div id="cho-chot-hoa-don-content">
+                        <div class="loading-overlay"><div class="loading-spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

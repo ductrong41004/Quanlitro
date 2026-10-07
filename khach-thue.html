@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khách Thuê - Quản Lý Phòng Trọ</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">🏠</div>
+            <div class="logo-text">
+                <h2>Nhà Trọ</h2>
+                <span>Quản lý chuyên nghiệp</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Tổng quan</div>
+            <a href="index.html" class="nav-item">
+                <div class="nav-icon">📊</div> Dashboard
+            </a>
+            <div class="nav-section-label">Quản lý</div>
+            <a href="phong.html" class="nav-item">
+                <div class="nav-icon">🏘️</div> Phòng trọ
+            </a>
+            <a href="khach-thue.html" class="nav-item active">
+                <div class="nav-icon">👥</div> Khách thuê
+            </a>
+            <a href="hop-dong.html" class="nav-item">
+                <div class="nav-icon">📋</div> Hợp đồng
+            </a>
+            <a href="hoa-don.html" class="nav-item">
+                <div class="nav-icon">🧾</div> Hóa đơn
+            </a>
+            <a href="cho-chot.html" class="nav-item">
+                <div class="nav-icon">⏳</div> Chờ chốt Hóa đơn
+            </a>
+            <a href="scan-khach.html" class="nav-item">
+                <div class="nav-icon">🖨️</div> Scan Khách
+            </a>
+        </nav>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar">
+            <div class="topbar-title"><h1>Quản Lý Khách Thuê</h1></div>
+            <div class="topbar-actions">
+                <button class="btn btn-primary" onclick="openModalKhach()">➕ Thêm khách thuê</button>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="filters-bar">
+                <div class="search-box" style="max-width:300px">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-khach" class="form-control" placeholder="Tìm theo tên..." onkeyup="if(event.key==='Enter') loadDanhSachKhach()">
+                </div>
+                <button class="btn btn-ghost" onclick="document.getElementById('search-khach').value=''; loadDanhSachKhach()">Làm mới</button>
+            </div>
+
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div class="table-wrap" style="border:none; border-radius:0;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Họ tên</th>
+                                <th>Phòng</th>
+                                <th>Thông tin liên hệ</th>
+                                <th>CCCD</th>
+                                <th>Ngày sinh</th>
+                                <th>Giới tính</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="khach-tbody">
+                            <tr><td colspan="7" style="text-align:center; padding:30px;"><div class="loading-spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Thêm/Sửa Khách -->
+    <div class="modal-overlay" id="modal-khach">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-khach-title">Thêm khách thuê</h3>
+                <button class="modal-close" onclick="closeModal('modal-khach')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-khach">
+                    <input type="hidden" id="k-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Họ tên *</label>
+                            <input type="text" id="k-ho-ten" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Căn cước công dân *</label>
+                            <input type="text" id="k-cccd" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" id="k-sdt" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày sinh</label>
+                            <input type="date" id="k-ngay-sinh" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Giới tính</label>
+                            <select id="k-gioi-tinh" class="form-control">
+                                <option value="NAM">Nam</option>
+                                <option value="NU">Nữ</option>
+                                <option value="KHAC">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+ 
+                    <div class="form-group">
+                        <label class="form-label">Quê quán</label>
+                        <textarea id="k-dia-chi" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea id="k-ghi-chu" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('modal-khach')">Hủy</button>
+                <button class="btn btn-primary" onclick="saveKhach()">Lưu thông tin</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/khach-thue.js"></script>
+</body>
+</html>
