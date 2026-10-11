@@ -64,17 +64,17 @@ function renderKhachTable() {
             
         return `
         <tr>
-            <td>
+            <td data-label="Họ tên">
                 <div style="font-weight:600; color:var(--text-primary)">${k.hoTen}</div>
             </td>
-            <td>${phongHienTai}</td>
-            <td>
+            <td data-label="Phòng hiện tại">${phongHienTai}</td>
+            <td data-label="SĐT">
                 <div>📱 ${k.soDienThoai || '—'}</div>
             </td>
-            <td><span class="badge badge-gray">${k.cccd || '—'}</span></td>
-            <td>${formatDate(k.ngaySinh)}</td>
-            <td>${gioiTinhLabel(k.gioiTinh)}</td>
-            <td>
+            <td data-label="CCCD"><span class="badge badge-gray">${k.cccd || '—'}</span></td>
+            <td data-label="Ngày sinh">${formatDate(k.ngaySinh)}</td>
+            <td data-label="Giới tính">${gioiTinhLabel(k.gioiTinh)}</td>
+            <td class="td-actions">
                 <button class="btn btn-ghost btn-sm" onclick="openModalKhach(${k.id})">Sửa</button>
                 <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteKhach(${k.id})">Xóa</button>
             </td>

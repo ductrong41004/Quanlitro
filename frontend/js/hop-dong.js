@@ -65,25 +65,25 @@ function renderHopDong(list) {
 
         return `
             <tr>
-                <td>
+                <td data-label="Phòng">
                     <strong>Phòng ${hd.phong.soPhong}</strong>
                     ${hd.phong.khuVuc ? `<div style="font-size:12px; color:var(--text-muted); margin-top:2px">Khu ${hd.phong.khuVuc}</div>` : ''}
                 </td>
-                <td>
+                <td data-label="Khách thuê">
                     <div style="font-weight:600; color:var(--success)">${hd.khachThues.map(k=>k.hoTen).join(' • ') || 'Chưa có'}</div>
                     <div style="font-size:12px; color:var(--text-muted)">Đại diện: ${hd.khachThues.length > 0 ? (hd.khachThues[0].soDienThoai || 'Không sđt') : ''}</div>
                 </td>
-                <td>
+                <td data-label="Thời hạn">
                     <div>Từ: ${formatDate(hd.ngayBatDau)}</div>
                     <div>Đến: ${formatDate(hd.ngayKetThuc)}</div>
                     ${hd.ngayKetThucThucTe ? `<div style="color:var(--danger); font-size:11px">Thực tế: ${formatDate(hd.ngayKetThucThucTe)}</div>` : ''}
                 </td>
-                <td>
+                <td data-label="Giá / Cọc">
                     <div style="color:var(--primary-light)">Giá: ${formatCurrency(hd.giaThueHopDong)}</div>
                     <div style="font-size:12px; color:var(--text-muted)">Cọc: ${formatCurrency(hd.tienCoc)}</div>
                 </td>
-                <td>${trangThaiHopDongBadge(hd.trangThai)}</td>
-                <td><div style="display:flex; gap:4px">${actionBtns}</div></td>
+                <td data-label="Trạng thái">${trangThaiHopDongBadge(hd.trangThai)}</td>
+                <td class="td-actions"><div style="display:flex; gap:4px">${actionBtns}</div></td>
             </tr>
         `;
     }).join('');

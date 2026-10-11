@@ -256,20 +256,20 @@ function renderHoaDon(list) {
 
         return `
             <tr style="cursor: pointer; transition: background 0.2s;" onclick="if(!event.target.closest('button')) xemChiTietHoaDon(${hd.id})" title="Nhấn để xem chi tiết hóa đơn">
-                <td>
+                <td data-label="Phòng">
                     <strong>Phòng ${hd.phong.soPhong}</strong>
                     ${hd.phong.khuVuc ? `<div style="font-size:12px; color:var(--text-muted); margin-top:4px">Khu ${hd.phong.khuVuc}</div>` : ''}
                 </td>
-                <td><div style="font-weight:600">${hd.thang}/${hd.nam}</div></td>
-                <td>${formatCurrency(hd.tienPhong)}</td>
-                <td>
+                <td data-label="Kỳ HĐ"><div style="font-weight:600">${hd.thang}/${hd.nam}</div></td>
+                <td data-label="Tiền phòng">${formatCurrency(hd.tienPhong)}</td>
+                <td data-label="Điện / Nước">
                     <div style="font-size:12px">⚡ ${formatCurrency(dien)}</div>
                     <div style="font-size:12px; color:var(--text-info)">💧 ${formatCurrency(nuoc)}</div>
                 </td>
-                <td>${formatCurrency(khac)}</td>
-                <td><strong style="color:var(--primary-light)">${formatCurrency(hd.tongTien)}</strong></td>
-                <td>${trangThaiHoaDonBadge(hd.trangThai)}</td>
-                <td>
+                <td data-label="Phí khác">${formatCurrency(khac)}</td>
+                <td data-label="Tổng tiền"><strong style="color:var(--primary-light)">${formatCurrency(hd.tongTien)}</strong></td>
+                <td data-label="Trạng thái">${trangThaiHoaDonBadge(hd.trangThai)}</td>
+                <td class="td-actions">
                     <div style="display:flex; gap:4px">
                         <button class="btn btn-ghost btn-sm" onclick="xemChiTietHoaDon(${hd.id})">Chi tiết</button>
                         ${hd.trangThai === 'CHUA_THANH_TOAN' ? 

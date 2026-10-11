@@ -127,7 +127,7 @@ function renderChoChotByMonth() {
 
     container.innerHTML = `
         <div class="table-wrap">
-            <table>
+            <table class="card-table-mobile">
                 <thead><tr>
                     <th>Khu / Phòng</th>
                     <th>Người đại diện HĐ</th>
@@ -171,14 +171,14 @@ function renderChoChotByMonth() {
                         <tr style="transition:background 0.2s;cursor:default;${dimStyle}"
                             onmouseover="this.style.background='rgba(255,255,255,0.02)'"
                             onmouseout="this.style.background=''">
-                            <td style="white-space: nowrap;">
+                            <td data-label="Phòng" style="white-space: nowrap;">
                                 <strong>Phòng ${item.soPhong}</strong>
                                 ${item.khuVuc ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Khu ${item.khuVuc}</div>` : ''}
                             </td>
-                            <td><div style="line-height:1.4">${item.tenKhach}</div></td>
-                            <td><div style="font-weight:600;color:var(--text); white-space: nowrap;">${day}/${mon}/${item.ngayGhi.getFullYear()}</div></td>
-                            <td>${timeBadge}</td>
-                            <td style="text-align:right">${actionBtn}</td>
+                            <td data-label="Đại diện"><div style="line-height:1.4">${item.tenKhach}</div></td>
+                            <td data-label="Ngày thu tiền"><div style="font-weight:600;color:var(--text); white-space: nowrap;">${day}/${mon}/${item.ngayGhi.getFullYear()}</div></td>
+                            <td data-label="Trạng thái">${timeBadge}</td>
+                            <td class="td-actions" style="text-align:right">${actionBtn}</td>
                         </tr>`;
                     }).join('')}
                 </tbody>

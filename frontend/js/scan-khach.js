@@ -72,13 +72,13 @@ function renderPreview() {
 
         return `
             <tr>
-                <td style="font-weight:600">${k.hoTen}</td>
-                <td><span class="badge badge-gray">${k.cccd || '—'}</span></td>
-                <td>📱 ${k.soDienThoai || '—'}</td>
-                <td>${k.ngaySinh ? k.ngaySinh.split('-').reverse().join('/') : '—'}</td>
-                <td>${k.gioiTinh === 'NAM' ? '♂ Nam' : (k.gioiTinh === 'NU' ? '♀ Nữ' : 'Khác')}</td>
-                <td>${k.diaChi || '—'}</td>
-                <td>${statusBadge}</td>
+                <td data-label="Họ tên" style="font-weight:600">${k.hoTen}</td>
+                <td data-label="CCCD"><span class="badge badge-gray">${k.cccd || '—'}</span></td>
+                <td data-label="Số ĐT">📱 ${k.soDienThoai || '—'}</td>
+                <td data-label="Ngày sinh">${k.ngaySinh ? k.ngaySinh.split('-').reverse().join('/') : '—'}</td>
+                <td data-label="Giới tính">${k.gioiTinh === 'NAM' ? '♂ Nam' : (k.gioiTinh === 'NU' ? '♀ Nữ' : 'Khác')}</td>
+                <td data-label="Quê quán">${k.diaChi || '—'}</td>
+                <td data-label="Trạng thái">${statusBadge}</td>
             </tr>
         `;
     }).join('');
@@ -224,11 +224,11 @@ function renderPhongPreview() {
         const giaFormatted = new Intl.NumberFormat('vi-VN').format(p.giaThue) + ' đ';
         return `
             <tr>
-                <td><span style="background:rgba(99,102,241,0.15); color:var(--primary-light); padding:2px 10px; border-radius:6px; font-weight:600">Khu ${p.khuVuc || '—'}</span></td>
-                <td><strong>Phòng ${p.soPhong}</strong></td>
-                <td style="color:var(--primary-light)">${giaFormatted}/th</td>
-                <td>${p.dienTich ? p.dienTich + ' m²' : '—'}</td>
-                <td>${badge}</td>
+                <td data-label="Khu vực"><span style="background:rgba(13,148,136,0.15); color:var(--primary-light); padding:2px 10px; border-radius:6px; font-weight:600">Khu ${p.khuVuc || '—'}</span></td>
+                <td data-label="Phòng"><strong>Phòng ${p.soPhong}</strong></td>
+                <td data-label="Giá thuê" style="color:var(--primary-light)">${giaFormatted}/th</td>
+                <td data-label="Diện tích">${p.dienTich ? p.dienTich + ' m²' : '—'}</td>
+                <td data-label="Trạng thái">${badge}</td>
             </tr>`;
     }).join('');
 
