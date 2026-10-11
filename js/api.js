@@ -37,10 +37,6 @@ async function initFirebase() {
     firebase.initializeApp(firebaseConfig);
   }
   db = firebase.firestore();
-  // Kích hoạt persistence ở chế độ nền (không await để tránh treo trên Safari / iPadOS WebKit)
-  db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-    console.warn('Firebase persistence warning:', err.code, err.message);
-  });
   return db;
 }
 
