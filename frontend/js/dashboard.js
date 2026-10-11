@@ -57,8 +57,8 @@ function renderChartDoanhThu(data) {
             datasets: [{
                 label: 'Doanh thu (VNĐ)',
                 data: values,
-                backgroundColor: 'rgba(99,102,241,0.6)',
-                borderColor: '#6366f1',
+                backgroundColor: 'rgba(13, 148, 136, 0.65)',
+                borderColor: '#14b8a6',
                 borderWidth: 2,
                 borderRadius: 8,
                 borderSkipped: false,
@@ -76,10 +76,10 @@ function renderChartDoanhThu(data) {
                 }
             },
             scales: {
-                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9191a8' } },
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
                 y: {
                     grid: { color: 'rgba(255,255,255,0.05)' },
-                    ticks: { color: '#9191a8', callback: v => (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v) }
+                    ticks: { color: '#94a3b8', callback: v => (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v) }
                 }
             }
         }
@@ -95,8 +95,8 @@ function renderChartPhong(trong, daThue, dangSua) {
             labels: ['Trống', 'Đã thuê', 'Đang sửa'],
             datasets: [{
                 data: [trong, daThue, dangSua],
-                backgroundColor: ['rgba(16,185,129,0.8)', 'rgba(99,102,241,0.8)', 'rgba(245,158,11,0.8)'],
-                borderColor: ['#10b981', '#6366f1', '#f59e0b'],
+                backgroundColor: ['rgba(16, 185, 129, 0.85)', 'rgba(13, 148, 136, 0.85)', 'rgba(245, 158, 11, 0.85)'],
+                borderColor: ['#10b981', '#14b8a6', '#f59e0b'],
                 borderWidth: 2,
                 hoverOffset: 8,
             }]
@@ -114,7 +114,7 @@ function renderChartPhong(trong, daThue, dangSua) {
 
     // Custom legend
     const legend = document.getElementById('phong-legend');
-    const colors = ['#10b981', '#6366f1', '#f59e0b'];
+    const colors = ['#10b981', '#0d9488', '#f59e0b'];
     const labels = ['Trống', 'Đã thuê', 'Đang sửa'];
     const vals = [trong, daThue, dangSua];
     legend.innerHTML = labels.map((l, i) => `

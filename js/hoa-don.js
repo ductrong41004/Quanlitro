@@ -637,7 +637,7 @@ function xemChiTietHoaDon(id) {
 
             <div class="hoadon-detail-row" style="margin-top:10px; border-top:1px dashed var(--border); padding-top:16px;">
                 <span class="label" style="font-size:20px; font-weight:800; color:#0f172a !important;">TỔNG CỘNG:</span>
-                <span class="value total" style="font-size:24px; font-weight:800; color:#4f46e5 !important;">${formatCurrency(hd.tongTien)}</span>
+                <span class="value total" style="font-size:24px; font-weight:800; color:#0d9488 !important;">${formatCurrency(hd.tongTien)}</span>
             </div>
 
             ${hd.ngayThanhToan ? `

@@ -978,8 +978,75 @@ function applyMoneyInput(el, { autoScale = true, onUpdate = null } = {}) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initBottomNav();
+  initResponsiveNav();
 });
+
+function initResponsiveNav() {
+  const sidebar = document.querySelector('.sidebar') || document.getElementById('sidebar');
+  const topbar = document.querySelector('.topbar');
+
+  // 1. Tạo Backdrop cho Sidebar nếu chưa có
+  let backdrop = document.querySelector('.sidebar-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    document.body.appendChild(backdrop);
+  }
+
+  // 2. Thêm nút đóng (close button) vào Sidebar logo nếu chưa có
+  if (sidebar) {
+    const sidebarLogo = sidebar.querySelector('.sidebar-logo');
+    if (sidebarLogo && !sidebar.querySelector('.sidebar-close-btn')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'sidebar-close-btn';
+      closeBtn.setAttribute('aria-label', 'Đóng menu');
+      closeBtn.innerHTML = '✕';
+      closeBtn.onclick = () => toggleSidebar(false);
+      sidebarLogo.appendChild(closeBtn);
+    }
+  }
+
+  // 3. Thêm nút Hamburger vào Topbar
+  if (topbar && !document.getElementById('btn-sidebar-toggle')) {
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'btn-sidebar-toggle';
+    toggleBtn.className = 'btn-sidebar-toggle';
+    toggleBtn.setAttribute('aria-label', 'Mở menu');
+    toggleBtn.innerHTML = `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    `;
+    topbar.insertBefore(toggleBtn, topbar.firstChild);
+    toggleBtn.onclick = () => toggleSidebar();
+  }
+
+  function toggleSidebar(forceState) {
+    if (!sidebar) return;
+    const shouldOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('open');
+    sidebar.classList.toggle('open', shouldOpen);
+    backdrop.classList.toggle('show', shouldOpen);
+    document.body.classList.toggle('sidebar-locked', shouldOpen);
+  }
+
+  backdrop.onclick = () => toggleSidebar(false);
+
+  // Đóng sidebar khi bấm chuyển trang trên màn hình nhỏ
+  if (sidebar) {
+    sidebar.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 1024) {
+          toggleSidebar(false);
+        }
+      });
+    });
+  }
+
+  // 4. Khởi tạo Bottom Navigation Bar cho điện thoại
+  initBottomNav();
+}
 
 function initBottomNav() {
   if (document.querySelector('.bottom-nav')) return;
@@ -988,24 +1055,36 @@ function initBottomNav() {
   bottomNav.className = 'bottom-nav';
 
   const menuItems = [
+    { name: 'Tổng quan', url: 'index.html', icon: '📊' },
     { name: 'Phòng trọ', url: 'phong.html', icon: '🏘️' },
-    { name: 'Khách thuê', url: 'khach-thue.html', icon: '👥' },
+    { name: 'Khách', url: 'khach-thue.html', icon: '👥' },
+    { name: 'Hợp đồng', url: 'hop-dong.html', icon: '📋' },
     { name: 'Hóa đơn', url: 'hoa-don.html', icon: '🧾' },
     { name: 'Chờ chốt', url: 'cho-chot.html', icon: '⏳' }
   ];
 
   const currentPath = window.location.pathname.toLowerCase();
+  const isRoot = currentPath.endsWith('/') || currentPath.endsWith('/index.html') || currentPath.endsWith('/quanlitro/') || currentPath.endsWith('/quanlitro/index.html');
 
   menuItems.forEach(item => {
     const a = document.createElement('a');
     a.href = item.url;
     a.className = 'bottom-nav-item';
-    if (currentPath.includes(item.url.toLowerCase())) {
+    
+    let isActive = false;
+    if (item.url === 'index.html') {
+      isActive = isRoot;
+    } else {
+      isActive = currentPath.includes(item.url.toLowerCase());
+    }
+
+    if (isActive) {
       a.className += ' active';
     }
+    
     a.innerHTML = `
-        <span class="bottom-nav-icon">${item.icon}</span>
-        <span class="bottom-nav-text">${item.name}</span>
+      <span class="bottom-nav-icon">${item.icon}</span>
+      <span class="bottom-nav-text">${item.name}</span>
     `;
     bottomNav.appendChild(a);
   });

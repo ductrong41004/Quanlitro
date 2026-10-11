@@ -1,8 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Hóa Đơn - Quản Lý Phòng Trọ</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -46,23 +49,23 @@
         <header class="topbar">
             <div class="topbar-title"><h1>Quản Lý Hóa Đơn</h1></div>
             <div class="topbar-actions">
-                <button class="btn btn-warning" onclick="openModalHoaDon(null, true)">⚡ Tạo hóa đơn nhanh</button>
-                <button class="btn btn-primary" onclick="openModalHoaDon(null, false)">➕ Lập hóa đơn mới</button>
+                <button class="btn btn-warning" onclick="openModalHoaDon(null, true)">⚡ Tạo nhanh</button>
+                <button class="btn btn-primary" onclick="openModalHoaDon(null, false)">➕ Lập HĐ mới</button>
             </div>
         </header>
 
-        <div style="padding: 0 30px; display: flex; gap: 15px; align-items: center; margin-top: 5px; margin-bottom: 20px;">
-             <span style="color: var(--text-muted); font-size: 14px;">⚙️ Cài đặt hệ thống:</span>
-             <div class="badge" style="background: rgba(255,255,255,0.05); padding: 6px 12px; cursor: pointer; transition: 0.2s" onclick="openConfigModal()" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                 Tên trọ: <strong id="lbl-cfg-ten" style="color: var(--success)">Nhà Trọ</strong> ✎
+        <div style="padding: 0 24px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; margin-bottom: 16px;">
+             <span style="color: var(--text-muted); font-size: 13px; font-weight: 600;">⚙️ Cài đặt:</span>
+             <div class="badge" style="background: rgba(255,255,255,0.06); padding: 8px 12px; cursor: pointer; transition: 0.2s; border-radius: 10px;" onclick="openConfigModal()" title="Nhấn để đổi tên trọ">
+                 Trọ: <strong id="lbl-cfg-ten" style="color: var(--success)">Nhà Trọ</strong> ✎
              </div>
-             <div class="badge" style="background: rgba(255,255,255,0.05); padding: 6px 12px; cursor: pointer; transition: 0.2s" onclick="openConfigModal()" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                 Giá điện: <strong id="lbl-cfg-dien" style="color: var(--primary-light)">3,500đ</strong>/kWh ✎
+             <div class="badge" style="background: rgba(255,255,255,0.06); padding: 8px 12px; cursor: pointer; transition: 0.2s; border-radius: 10px;" onclick="openConfigModal()" title="Nhấn để đổi giá điện">
+                 Điện: <strong id="lbl-cfg-dien" style="color: var(--primary-light)">3,500đ</strong>/kWh ✎
              </div>
-             <div class="badge" style="background: rgba(255,255,255,0.05); padding: 6px 12px; cursor: pointer; transition: 0.2s" onclick="openConfigModal()" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                 Giá nước: <strong id="lbl-cfg-nuoc" style="color: var(--info)">15,000đ</strong>/m³ ✎
+             <div class="badge" style="background: rgba(255,255,255,0.06); padding: 8px 12px; cursor: pointer; transition: 0.2s; border-radius: 10px;" onclick="openConfigModal()" title="Nhấn để đổi giá nước">
+                 Nước: <strong id="lbl-cfg-nuoc" style="color: var(--info)">15,000đ</strong>/m³ ✎
              </div>
-             <div class="badge" style="background: rgba(255,255,255,0.05); padding: 6px 12px; cursor: pointer; transition: 0.2s" onclick="openConfigModal()" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+             <div class="badge" style="background: rgba(255,255,255,0.06); padding: 8px 12px; cursor: pointer; transition: 0.2s; border-radius: 10px;" onclick="openConfigModal()" title="Nhấn để đổi tài khoản VietQR">
                  VietQR: <strong id="lbl-cfg-nh" style="color: var(--warning)">Chưa cài</strong> ✎
              </div>
         </div>
