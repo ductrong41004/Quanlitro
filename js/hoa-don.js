@@ -809,13 +809,31 @@ async function copyInvoiceImage() {
         
         showToast('Đang tạo ảnh hóa đơn...', 'info');
         
+        // Lưu lại vị trí cuộn hiện tại của popup
+        const prevScrollTop = captureArea.scrollTop;
+        captureArea.scrollTop = 0;
+
+        const fullWidth = captureArea.scrollWidth || captureArea.offsetWidth;
+        const fullHeight = captureArea.scrollHeight || captureArea.offsetHeight;
+
         const canvas = await html2canvas(captureArea, {
             backgroundColor: '#ffffff',
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            logging: false
+            logging: false,
+            width: fullWidth,
+            height: fullHeight,
+            windowWidth: fullWidth,
+            windowHeight: fullHeight,
+            scrollX: 0,
+            scrollY: 0,
+            x: 0,
+            y: 0
         });
+
+        // Khôi phục lại scroll cho người dùng
+        captureArea.scrollTop = prevScrollTop;
         
         // 1. Thử copy vào Clipboard (hỗ trợ desktop / HTTPS)
         let copySuccess = false;
