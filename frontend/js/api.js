@@ -128,6 +128,38 @@ const api = {
       if (path === '/hop-dong') {
         const snap = await firestore.collection('hop_dong').get();
         let list = snap.docs.map(docToData);
+
+        // Tự động nạp đủ thông tin phòng và khách nếu thiếu
+        const needHydrate = list.some(h => !h.phong || !h.phong.soPhong || (Array.isArray(h.khachThues) && h.khachThues.some(k => !k.hoTen)));
+        if (needHydrate) {
+          const [pSnap, kSnap] = await Promise.all([
+            firestore.collection('phong').get(),
+            firestore.collection('khach_thue').get()
+          ]);
+          const roomMap = {};
+          pSnap.docs.forEach(d => { roomMap[String(d.id)] = docToData(d); });
+          const tenantMap = {};
+          kSnap.docs.forEach(d => { tenantMap[String(d.id)] = docToData(d); });
+
+          list.forEach(h => {
+            if (h.phong && h.phong.id && (!h.phong.soPhong || h.phong.soPhong === undefined)) {
+              const p = roomMap[String(h.phong.id)];
+              if (p) {
+                h.phong = { id: p.id, soPhong: p.soPhong, khuVuc: p.khuVuc || '', giaThue: p.giaThue || 0 };
+              }
+            }
+            if (Array.isArray(h.khachThues)) {
+              h.khachThues = h.khachThues.map(k => {
+                if (k && k.id && !k.hoTen) {
+                  const fullK = tenantMap[String(k.id)];
+                  return fullK ? { id: fullK.id, hoTen: fullK.hoTen, soDienThoai: fullK.soDienThoai || '', cccd: fullK.cccd || '' } : k;
+                }
+                return k;
+              });
+            }
+          });
+        }
+
         const tt = params.get('trangThai');
         if (tt) list = list.filter(h => h.trangThai === tt);
         const phongId = params.get('phongId');
@@ -140,7 +172,26 @@ const api = {
         const id = path.split('/')[2];
         const doc = await firestore.collection('hop_dong').doc(String(id)).get();
         if (!doc.exists) return { success: false, message: 'Không tìm thấy hợp đồng!' };
-        return { success: true, data: docToData(doc) };
+        const hdData = docToData(doc);
+        if (hdData.phong && hdData.phong.id && !hdData.phong.soPhong) {
+          const pDoc = await firestore.collection('phong').doc(String(hdData.phong.id)).get();
+          if (pDoc.exists) {
+            const p = pDoc.data();
+            hdData.phong = { id: p.id, soPhong: p.soPhong, khuVuc: p.khuVuc || '', giaThue: p.giaThue || 0 };
+          }
+        }
+        if (Array.isArray(hdData.khachThues)) {
+          for (let i = 0; i < hdData.khachThues.length; i++) {
+            if (hdData.khachThues[i] && hdData.khachThues[i].id && !hdData.khachThues[i].hoTen) {
+              const kDoc = await firestore.collection('khach_thue').doc(String(hdData.khachThues[i].id)).get();
+              if (kDoc.exists) {
+                const k = kDoc.data();
+                hdData.khachThues[i] = { id: k.id, hoTen: k.hoTen, soDienThoai: k.soDienThoai || '', cccd: k.cccd || '' };
+              }
+            }
+          }
+        }
+        return { success: true, data: hdData };
       }
 
       // 5. HÓA ĐƠN: /hoa-don
@@ -178,6 +229,34 @@ const api = {
       if (path === '/hoa-don') {
         const snap = await firestore.collection('hoa_don').get();
         let list = snap.docs.map(docToData);
+
+        const needHydrate = list.some(h => !h.phong || !h.phong.soPhong || (h.khachThue && !h.khachThue.hoTen));
+        if (needHydrate) {
+          const [pSnap, kSnap] = await Promise.all([
+            firestore.collection('phong').get(),
+            firestore.collection('khach_thue').get()
+          ]);
+          const roomMap = {};
+          pSnap.docs.forEach(d => { roomMap[String(d.id)] = docToData(d); });
+          const tenantMap = {};
+          kSnap.docs.forEach(d => { tenantMap[String(d.id)] = docToData(d); });
+
+          list.forEach(h => {
+            if (h.phong && h.phong.id && (!h.phong.soPhong || h.phong.soPhong === undefined)) {
+              const p = roomMap[String(h.phong.id)];
+              if (p) {
+                h.phong = { id: p.id, soPhong: p.soPhong, khuVuc: p.khuVuc || '', giaThue: p.giaThue || 0 };
+              }
+            }
+            if (h.khachThue && h.khachThue.id && !h.khachThue.hoTen) {
+              const k = tenantMap[String(h.khachThue.id)];
+              if (k) {
+                h.khachThue = { id: k.id, hoTen: k.hoTen, soDienThoai: k.soDienThoai || '', cccd: k.cccd || '' };
+              }
+            }
+          });
+        }
+
         const thang = params.get('thang');
         const nam = params.get('nam');
         const phongId = params.get('phongId');
@@ -361,18 +440,53 @@ const api = {
         const active = contracts.find(c => c.trangThai === 'DANG_HIEU_LUC' && c.phong && String(c.phong.id) === String(phongId));
         if (active) return { success: false, message: 'Phòng này đang có hợp đồng hiệu lực!' };
 
+        // Nạp đầy đủ thông tin phòng
+        let fullPhong = { id: parseInt(phongId) || phongId };
+        const pDoc = await firestore.collection('phong').doc(String(phongId)).get();
+        if (pDoc.exists) {
+          const pData = pDoc.data();
+          fullPhong = {
+            id: pData.id,
+            soPhong: pData.soPhong,
+            khuVuc: pData.khuVuc || '',
+            giaThue: pData.giaThue || 0
+          };
+        }
+
+        // Nạp đầy đủ thông tin danh sách khách thuê
+        let fullKhachThues = [];
+        if (Array.isArray(body.khachThues)) {
+          for (const item of body.khachThues) {
+            const kDoc = await firestore.collection('khach_thue').doc(String(item.id)).get();
+            if (kDoc.exists) {
+              const kData = kDoc.data();
+              fullKhachThues.push({
+                id: kData.id,
+                hoTen: kData.hoTen,
+                soDienThoai: kData.soDienThoai || '',
+                cccd: kData.cccd || '',
+                diaChi: kData.diaChi || ''
+              });
+            } else {
+              fullKhachThues.push(item);
+            }
+          }
+        }
+
         const maxId = contracts.reduce((max, c) => Math.max(max, Number(c.id) || 0), 0);
         const newId = maxId + 1;
         const newContract = {
           ...body,
           id: newId,
+          phong: fullPhong,
+          khachThues: fullKhachThues,
+          khachThue: fullKhachThues[0] || null,
           trangThai: 'DANG_HIEU_LUC',
           ngayTao: new Date().toISOString()
         };
         await firestore.collection('hop_dong').doc(String(newId)).set(newContract);
 
         // Cập nhật trạng thái phòng -> DA_THUE & đồng bộ giá / chỉ số
-        const pDoc = await firestore.collection('phong').doc(String(phongId)).get();
         if (pDoc.exists) {
           const pUpdate = { trangThai: 'DA_THUE' };
           if (body.giaThueHopDong) pUpdate.giaThue = Number(body.giaThueHopDong);
@@ -396,6 +510,34 @@ const api = {
           return { success: false, message: `Đã tạo hóa đơn cho phòng này tháng ${body.thang}/${body.nam} rồi!` };
         }
 
+        // Nạp đầy đủ thông tin phòng
+        let fullPhong = { id: parseInt(phongId) || phongId };
+        const pDoc = await firestore.collection('phong').doc(String(phongId)).get();
+        if (pDoc.exists) {
+          const pData = pDoc.data();
+          fullPhong = {
+            id: pData.id,
+            soPhong: pData.soPhong,
+            khuVuc: pData.khuVuc || '',
+            giaThue: pData.giaThue || 0
+          };
+        }
+
+        // Nạp đầy đủ thông tin khách thuê nếu có
+        let fullKhachThue = null;
+        if (body.khachThue && body.khachThue.id) {
+          const kDoc = await firestore.collection('khach_thue').doc(String(body.khachThue.id)).get();
+          if (kDoc.exists) {
+            const kData = kDoc.data();
+            fullKhachThue = {
+              id: kData.id,
+              hoTen: kData.hoTen,
+              soDienThoai: kData.soDienThoai || '',
+              cccd: kData.cccd || ''
+            };
+          }
+        }
+
         // Tính tổng tiền
         const dien = Math.max(0, (Number(body.chiSoDienMoi) || 0) - (Number(body.chiSoDienCu) || 0)) * (Number(body.donGiaDien) || 0);
         const nuoc = Math.max(0, (Number(body.chiSoNuocMoi) || 0) - (Number(body.chiSoNuocCu) || 0)) * (Number(body.donGiaNuoc) || 0);
@@ -407,6 +549,8 @@ const api = {
         const newInvoice = {
           ...body,
           id: newId,
+          phong: fullPhong,
+          khachThue: fullKhachThue,
           tongTien,
           trangThai: body.trangThai || 'CHUA_THANH_TOAN',
           ngayTao: new Date().toISOString()
@@ -529,6 +673,36 @@ const api = {
           await firestore.collection('phong').doc(String(body.phong.id)).update({ trangThai: 'DA_THUE' });
         }
 
+        // Nạp đầy đủ thông tin phòng nếu có gửi phong
+        if (body.phong && body.phong.id) {
+          const pDoc = await firestore.collection('phong').doc(String(body.phong.id)).get();
+          if (pDoc.exists) {
+            const pData = pDoc.data();
+            body.phong = { id: pData.id, soPhong: pData.soPhong, khuVuc: pData.khuVuc || '', giaThue: pData.giaThue || 0 };
+          }
+        }
+        // Nạp đầy đủ thông tin khách thuê nếu có gửi khachThues
+        if (Array.isArray(body.khachThues)) {
+          const fullKhachThues = [];
+          for (const item of body.khachThues) {
+            const kDoc = await firestore.collection('khach_thue').doc(String(item.id)).get();
+            if (kDoc.exists) {
+              const kData = kDoc.data();
+              fullKhachThues.push({
+                id: kData.id,
+                hoTen: kData.hoTen,
+                soDienThoai: kData.soDienThoai || '',
+                cccd: kData.cccd || '',
+                diaChi: kData.diaChi || ''
+              });
+            } else {
+              fullKhachThues.push(item);
+            }
+          }
+          body.khachThues = fullKhachThues;
+          body.khachThue = fullKhachThues[0] || null;
+        }
+
         await firestore.collection('hop_dong').doc(String(id)).update({
           ...body,
           ngayCapNhat: new Date().toISOString()
@@ -564,6 +738,21 @@ const api = {
         }
 
         // Cập nhật hóa đơn bình thường
+        if (body.phong && body.phong.id && !body.phong.soPhong) {
+          const pDoc = await firestore.collection('phong').doc(String(body.phong.id)).get();
+          if (pDoc.exists) {
+            const pData = pDoc.data();
+            body.phong = { id: pData.id, soPhong: pData.soPhong, khuVuc: pData.khuVuc || '', giaThue: pData.giaThue || 0 };
+          }
+        }
+        if (body.khachThue && body.khachThue.id && !body.khachThue.hoTen) {
+          const kDoc = await firestore.collection('khach_thue').doc(String(body.khachThue.id)).get();
+          if (kDoc.exists) {
+            const kData = kDoc.data();
+            body.khachThue = { id: kData.id, hoTen: kData.hoTen, soDienThoai: kData.soDienThoai || '', cccd: kData.cccd || '' };
+          }
+        }
+
         const dien = Math.max(0, (Number(body.chiSoDienMoi) || 0) - (Number(body.chiSoDienCu) || 0)) * (Number(body.donGiaDien) || 0);
         const nuoc = Math.max(0, (Number(body.chiSoNuocMoi) || 0) - (Number(body.chiSoNuocCu) || 0)) * (Number(body.donGiaNuoc) || 0);
         const giam = Number(body.giamGia) || 0;
