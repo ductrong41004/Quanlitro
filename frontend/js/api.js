@@ -558,7 +558,6 @@ const api = {
         await firestore.collection('hoa_don').doc(String(newId)).set(newInvoice);
 
         // Cập nhật chỉ số điện nước mới vào phòng
-        const pDoc = await firestore.collection('phong').doc(String(phongId)).get();
         if (pDoc.exists) {
           const p = pDoc.data();
           const pUpdate = {};
