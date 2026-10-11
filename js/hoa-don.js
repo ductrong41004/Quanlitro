@@ -682,13 +682,13 @@ function xemChiTietHoaDon(id) {
             
             <div id="qr-container-1" style="display:${hasQR1 ? 'block' : 'none'}; text-align:center;">
                 <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">🏦 ${cfgNganHang} · ${cfgSoTaiKhoan}</div>
-                <img src="${qrUrl1}" alt="QR TK1" style="max-width:200px; width:100%; border-radius:10px; background:white; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                <img id="qr-img-1" src="${qrUrl1}" crossorigin="anonymous" alt="QR TK1" style="max-width:200px; width:100%; border-radius:10px; background:white; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
                 <div style="font-size:12px; font-weight:600; color:var(--text); margin-top:6px;">${cfgTenChuTaiKhoan}</div>
             </div>
             
             <div id="qr-container-2" style="display:${!hasQR1 && hasQR2 ? 'block' : 'none'}; text-align:center;">
                 <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">🏦 ${cfg2NganHang} · ${cfg2SoTaiKhoan}</div>
-                <img src="${qrUrl2}" alt="QR TK2" style="max-width:200px; width:100%; border-radius:10px; background:white; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                <img id="qr-img-2" src="${qrUrl2}" crossorigin="anonymous" alt="QR TK2" style="max-width:200px; width:100%; border-radius:10px; background:white; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
                 <div style="font-size:12px; font-weight:600; color:var(--text); margin-top:6px;">${cfg2TenChuTaiKhoan}</div>
             </div>
         </div>`;
@@ -816,11 +816,24 @@ async function copyInvoiceImage() {
         const fullWidth = captureArea.scrollWidth || captureArea.offsetWidth;
         const fullHeight = captureArea.scrollHeight || captureArea.offsetHeight;
 
+        // Chuyển ảnh QR sang base64 dataURL để html2canvas không bao giờ bị lỗi CORS hay bị trắng
+        const qrImgs = captureArea.querySelectorAll('img[id^="qr-img"]');
+        for (const img of qrImgs) {
+            if (img.src && !img.src.startsWith('data:') && img.style.display !== 'none' && img.offsetParent !== null) {
+                try {
+                    const b64 = await convertImgToBase64(img.src);
+                    if (b64) img.src = b64;
+                } catch(qrErr) {
+                    console.warn('QR to base64 conversion skipped:', qrErr);
+                }
+            }
+        }
+
         const canvas = await html2canvas(captureArea, {
             backgroundColor: '#ffffff',
             scale: 2,
             useCORS: true,
-            allowTaint: true,
+            allowTaint: false,
             logging: false,
             width: fullWidth,
             height: fullHeight,
@@ -897,6 +910,36 @@ function downloadCanvasImage(canvas) {
         if (win) {
             win.document.write(`<img src="${canvas.toDataURL('image/png')}" style="max-width:100%; height:auto;" alt="Hóa đơn">`);
         }
+    }
+}
+
+async function convertImgToBase64(url) {
+    try {
+        const resp = await fetch(url, { mode: 'cors' });
+        if (!resp.ok) return null;
+        const blob = await resp.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (e) {
+        // Fallback dùng Image object vẽ lên canvas
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                const cv = document.createElement('canvas');
+                cv.width = img.naturalWidth || img.width;
+                cv.height = img.naturalHeight || img.height;
+                const ctx = cv.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve(cv.toDataURL('image/png'));
+            };
+            img.onerror = () => resolve(null);
+            img.src = url;
+        });
     }
 }
 
