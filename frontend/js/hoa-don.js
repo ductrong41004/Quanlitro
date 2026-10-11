@@ -695,7 +695,9 @@ function xemChiTietHoaDon(id) {
     }
 
     footer.innerHTML = `
-        <button class="btn btn-ghost" onclick="copyInvoiceImage()" style="border: 1px solid var(--border); margin-right:auto;">📸 Copy Ảnh</button>
+        <div style="display:flex; gap:6px; margin-right:auto; flex-wrap:wrap;">
+            <button class="btn btn-ghost" onclick="copyInvoiceImage()" style="border: 1px solid var(--border);" title="Copy hoặc tải ảnh">📸 Copy / Tải Ảnh</button>
+        </div>
         <button class="btn btn-ghost" onclick="closeModal('modal-chitiet')">Đóng</button>
         ${hd.trangThai === 'CHUA_THANH_TOAN' ? 
             `<button class="btn btn-success" onclick="openThanhToan(${hd.id})">Thanh toán ngay</button>` : 
@@ -803,28 +805,80 @@ function deleteHoaDon(id) {
 async function copyInvoiceImage() {
     try {
         const captureArea = document.getElementById('chitiet-body');
+        if (!captureArea) return;
         
         showToast('Đang tạo ảnh hóa đơn...', 'info');
         
         const canvas = await html2canvas(captureArea, {
             backgroundColor: '#ffffff',
             scale: 2,
-            useCORS: true
+            useCORS: true,
+            allowTaint: true,
+            logging: false
         });
         
-        canvas.toBlob(async function(blob) {
+        // 1. Thử copy vào Clipboard (hỗ trợ desktop / HTTPS)
+        let copySuccess = false;
+        if (navigator.clipboard && window.ClipboardItem) {
             try {
-                const item = new ClipboardItem({ "image/png": blob });
-                await navigator.clipboard.write([item]);
-                showToast('Đã copy Hóa Đơn vào Bộ Nhớ! (Nhấn Ctrl+V để dán)', 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('Trình duyệt chưa cho phép copy. Hãy dùng tính năng chụp màn hình nhé!', 'warning');
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                if (blob) {
+                    const item = new ClipboardItem({ "image/png": blob });
+                    await navigator.clipboard.write([item]);
+                    copySuccess = true;
+                    showToast('Đã copy Hóa Đơn vào Bộ Nhớ! (Nhấn Ctrl+V để dán)', 'success');
+                }
+            } catch (clipErr) {
+                console.warn('Clipboard writeImage failed, falling back:', clipErr);
             }
-        });
+        }
+
+        // 2. Nếu copy vào Clipboard không thành công (trên điện thoại/Safari/trình duyệt chặn)
+        if (!copySuccess) {
+            // Thử Web Share API (đặc biệt tốt trên iPhone / Android để gửi qua Zalo, Messenger, Lưu ảnh)
+            if (navigator.share && navigator.canShare) {
+                try {
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    const file = new File([blob], `HoaDon_${Date.now()}.png`, { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Hóa đơn tiền phòng',
+                            text: 'Gửi hóa đơn tiền phòng'
+                        });
+                        showToast('Đã mở chia sẻ ảnh hóa đơn!', 'success');
+                        return;
+                    }
+                } catch (shareErr) {
+                    console.warn('Web Share failed, fallback to download:', shareErr);
+                }
+            }
+
+            // Fallback tự động tải ảnh về máy
+            downloadCanvasImage(canvas);
+            showToast('Đã tự động tải ảnh hóa đơn về máy cho bạn!', 'success');
+        }
     } catch (e) {
         console.error(e);
-        showToast('Lỗi khi tạo ảnh hóa đơn', 'error');
+        showToast('Lỗi khi tạo ảnh hóa đơn: ' + (e.message || ''), 'error');
+    }
+}
+
+function downloadCanvasImage(canvas) {
+    try {
+        const link = document.createElement('a');
+        link.download = `HoaDon_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (err) {
+        console.error('Download canvas error:', err);
+        // Fallback mở ảnh trong tab mới
+        const win = window.open();
+        if (win) {
+            win.document.write(`<img src="${canvas.toDataURL('image/png')}" style="max-width:100%; height:auto;" alt="Hóa đơn">`);
+        }
     }
 }
 
